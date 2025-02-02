@@ -78,7 +78,8 @@ class knn:
         Returns:
             np.ndarray: Predicted class labels.
         """
-        # TODO
+        probabilities = self.predict_proba(X)
+        return np.argmax(probabilities, axis=1)
 
     def predict_proba(self, X):
         """
@@ -93,7 +94,18 @@ class knn:
         Returns:
             np.ndarray: Predicted class probabilities.
         """
-        # TODO
+        probabilities = []
+        unique_labels = np.unique(self.y_train)
+        
+        for point in X:
+            distances = self.compute_distances(point)
+            k_nearest_indices = self.get_k_nearest_neighbors(distances)
+            k_nearest_labels = self.y_train[k_nearest_indices]
+            
+            prob = np.array([np.sum(k_nearest_labels == label) / self.k for label in unique_labels])
+            probabilities.append(prob)
+        
+        return np.array(probabilities)
 
     def compute_distances(self, point: np.ndarray) -> np.ndarray:
         """Compute distance from a point to every point in the training dataset
@@ -122,7 +134,13 @@ class knn:
         Hint:
             You might want to check the np.argsort function.
         """
-        # TODO
+    
+        if self.k > len(distances):
+            raise ValueError("k cannot be larger than the number of available training samples.")
+
+        k_nearest_indices = np.argsort(distances)[:self.k]
+
+        return k_nearest_indices
 
     def most_common_label(self, knn_labels: np.ndarray) -> int:
         """Obtain the most common label from the labels of the k nearest neighbors
@@ -133,7 +151,11 @@ class knn:
         Returns:
             int: most common label
         """
-        # TODO
+        # Labels únicas y cuantas veces aparecen
+        unique_labels, counts = np.unique(knn_labels, return_counts=True)
+        max_count_index = np.argmax(counts)
+        
+        return unique_labels[max_count_index]
 
     def __str__(self):
         """
