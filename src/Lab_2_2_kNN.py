@@ -52,15 +52,15 @@ class knn:
         """
         # Valido cantidad de filas 
         if X_train.shape[0] != y_train.shape[0]:
-            raise ValueError("X_train and y_train must have the same number of rows.")
+            raise ValueError("Length of X_train and y_train must be equal.")
         
         # Valido k
         if not isinstance(k, int) or k <= 0:
-            raise ValueError("k must be a positive integer.")
+            raise ValueError("k and p must be positive integers.")
         
         # Valido p
         if not isinstance(p, int) or p <= 0:
-            raise ValueError("p must be a positive integer.")
+            raise ValueError("k and p must be positive integers.")
         
         # Guardo valores
         self.k = k
