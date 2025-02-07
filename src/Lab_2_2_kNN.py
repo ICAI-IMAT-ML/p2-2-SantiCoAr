@@ -270,16 +270,16 @@ def evaluate_classification_metrics(y_true, y_pred, positive_label):
     accuracy = (tp + tn) / (tp + tn + fp + fn)
 
     # Precision
-    precision = tp / (tp + fp)
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
 
     # Recall (Sensitivity)
-    recall = tp / (tp + fn)
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
 
     # Specificity
-    specificity = tn / (tn + fp)
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0
 
     # F1 Score
-    f1 = 2 * (precision * recall) / (precision + recall)
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
 
     return {
         "Confusion Matrix": [tn, fp, fn, tp],
@@ -315,7 +315,34 @@ def plot_calibration_curve(y_true, y_probs, positive_label, n_bins=10):
             - "true_proportions": Array of the fraction of positives in each bin
 
     """
-    # TODO
+    # Convert true labels to binary format
+    y_true_mapped = np.array([1 if label == positive_label else 0 for label in y_true])
+    
+    # Define bins and categorize probabilities
+    bins = np.linspace(0, 1, n_bins + 1)
+    bin_indices = np.digitize(y_probs, bins) - 1
+    
+    bin_centers = (bins[:-1] + bins[1:]) / 2
+    true_proportions = np.zeros(n_bins)
+    
+    for i in range(n_bins):
+        bin_mask = bin_indices == i
+        if np.any(bin_mask):
+            true_proportions[i] = np.mean(y_true_mapped[bin_mask])
+        else:
+            true_proportions[i] = np.nan  # Mark empty bins with NaN
+    
+    # # Plot calibration curve
+    # plt.figure(figsize=(8, 6))
+    # plt.plot(bin_centers, true_proportions, "o-", label="Calibration Curve")
+    # plt.plot([0, 1], [0, 1], "--", color="gray", label="Perfect Calibration")
+    # plt.xlabel("Predicted Probability")
+    # plt.ylabel("Fraction of Positives")
+    # plt.title("Calibration Curve")
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
+    
     return {"bin_centers": bin_centers, "true_proportions": true_proportions}
 
 
