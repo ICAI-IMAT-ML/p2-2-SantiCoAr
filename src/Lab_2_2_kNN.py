@@ -332,16 +332,16 @@ def plot_calibration_curve(y_true, y_probs, positive_label, n_bins=10):
         else:
             true_proportions[i] = np.nan  # Mark empty bins with NaN
     
-    # # Plot calibration curve
-    # plt.figure(figsize=(8, 6))
-    # plt.plot(bin_centers, true_proportions, "o-", label="Calibration Curve")
-    # plt.plot([0, 1], [0, 1], "--", color="gray", label="Perfect Calibration")
-    # plt.xlabel("Predicted Probability")
-    # plt.ylabel("Fraction of Positives")
-    # plt.title("Calibration Curve")
-    # plt.legend()
-    # plt.grid()
-    # plt.show()
+    # Plot calibration curve
+    plt.figure(figsize=(8, 6))
+    plt.plot(bin_centers, true_proportions, "o-", label="Calibration Curve")
+    plt.plot([0, 1], [0, 1], "--", color="gray", label="Perfect Calibration")
+    plt.xlabel("Predicted Probability")
+    plt.ylabel("Fraction of Positives")
+    plt.title("Calibration Curve")
+    plt.legend()
+    plt.grid()
+    plt.show()
     
     return {"bin_centers": bin_centers, "true_proportions": true_proportions}
 
@@ -372,7 +372,22 @@ def plot_probability_histograms(y_true, y_probs, positive_label, n_bins=10):
                 Array of predicted probabilities for the negative class.
 
     """
-    # TODO
+    y_true_mapped = np.array([1 if label == positive_label else 0 for label in y_true])
+
+    # Extract probabilities for each class
+    pos_probs = y_probs[y_true_mapped == 1]
+    neg_probs = y_probs[y_true_mapped == 0]
+    
+    # Plot histograms
+    plt.figure(figsize=(8, 6))
+    plt.hist(pos_probs, bins=n_bins, alpha=0.6, color='blue', label='Positive Class')
+    plt.hist(neg_probs, bins=n_bins, alpha=0.6, color='red', label='Negative Class')
+    plt.xlabel("Predicted Probability")
+    plt.ylabel("Count")
+    plt.title("Probability Distributions for Each Class")
+    plt.legend()
+    plt.grid()
+    plt.show()
 
     return {
         "array_passed_to_histogram_of_positive_class": y_probs[y_true_mapped == 1],
@@ -402,5 +417,43 @@ def plot_roc_curve(y_true, y_probs, positive_label):
             - "tpr": Array of True Positive Rates for each threshold.
 
     """
-    # TODO
+    # Convert true labels to binary format
+    y_true_mapped = np.array([1 if label == positive_label else 0 for label in y_true])
+
+    # Ensure all possible thresholds are included
+    thresholds = np.linspace(0, 1, len(y_probs) + 1)
+
+    fpr = []
+    tpr = []
+
+    # Compute TPR and FPR for each threshold
+    for threshold in thresholds:
+        y_pred = (y_probs >= threshold).astype(int)
+
+        tp = np.sum((y_true_mapped == 1) & (y_pred == 1))
+        fp = np.sum((y_true_mapped == 0) & (y_pred == 1))
+        tn = np.sum((y_true_mapped == 0) & (y_pred == 0))
+        fn = np.sum((y_true_mapped == 1) & (y_pred == 0))
+
+        tpr_value = tp / (tp + fn) if (tp + fn) > 0 else 0
+        fpr_value = fp / (fp + tn) if (fp + tn) > 0 else 0
+
+        tpr.append(tpr_value)
+        fpr.append(fpr_value)
+
+    # Convert lists to numpy arrays
+    fpr = np.array(fpr)
+    tpr = np.array(tpr)
+
+    # Plot ROC curve
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, label="ROC Curve", color="blue")
+    plt.plot([0, 1], [0, 1], "--", color="gray", label="Random Guess")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Receiver Operating Characteristic (ROC) Curve")
+    plt.legend()
+    plt.grid()
+    plt.show()
+
     return {"fpr": np.array(fpr), "tpr": np.array(tpr)}
